@@ -1,19 +1,41 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  ARM_CLIENT_ID: '4725e74c-bf04-411a-ac66-b80ba4857b04'
+  ARM_CLIENT_SECRET: 'm0o8Q~QA~n1xjzKTRxh2zDNvHJnHpgjJKlfEFaaX'
+  ARM_SUBSCRIPTION_ID: '467d1c24-a75f-489f-bb4c-d8300586e65e'
+  ARM_TENANT_ID: '88305003-440b-4e88-9574-2533eeb2a273'
+  TF_VAR_storage_account_name: 'bradwillztstate'
+  TF_VAR_container_name: 'tstate'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+- stage: Terraform
+  jobs:
+  - job: Terraform
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        addToPath: true
+
+    - script: |
+        curl -LO https://releases.hashicorp.com/terraform/1.0.0/terraform_1.0.0_linux_amd64.zip
+        unzip terraform_1.0.0_linux_amd64.zip
+        sudo mv terraform /usr/local/bin/
+      displayName: 'Install Terraform'
+
+    - script: terraform init
+      displayName: 'Terraform INIT'
+
+    - script: terraform plan
+      displayName: 'Terraform PLAN'
+
+    - script: terraform validate
+      displayName: 'Terraform VALIDATE'
+
+    - script: terraform apply -auto-approve
+      displayName: 'Terraform APPLY'
